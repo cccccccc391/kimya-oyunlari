@@ -38,6 +38,24 @@ OYUNLAR = [
 ]
 
 
+# Toplu sayfada listelenmeyen, kendi adresinde kilitli yayınlanan oyunlar.
+# cikti klasörü ayrı bir yayın reposudur; içine kilitli index.html ve eski
+# çevrim dışı önbelleği temizleyen sw.js yazılır.
+OZEL = [
+    {'id': 'element-oyunu', 'ad': 'Element Dosyaları', 'alt': 'Atomun Peşinde: kanıtlardan elementin kimliğini çıkar', 'cikti': DEV / 'element-oyunu-yayin', 'geri': '../kimya-oyunlari/'},
+]
+
+# Eski sürümün service worker'ı telefonlarda oyunu önbellekte tutuyordu. Bu sürüm
+# önbelleği siler ve kendini kaldırır; böylece önbellekteki kilitsiz kopya da gider.
+SW_TEMIZLE = """// Önbellek temizleyici: eski çevrim dışı kopyayı siler ve kendini kaldırır.
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', olay => olay.waitUntil((async () => {
+  for (const ad of await caches.keys()) await caches.delete(ad);
+  await self.registration.unregister();
+  for (const istemci of await self.clients.matchAll({ type: 'window' })) istemci.navigate(istemci.url);
+})()));
+"""
+
 def b64(b: bytes) -> str:
     return base64.b64encode(b).decode('ascii')
 
@@ -103,6 +121,13 @@ def main() -> int:
             .replace('__CEVRIMICI__', '1'))
     (KOK / 'index.html').write_text(site, encoding='utf-8')
 
+    # kendi adresinde yayınlanan kilitli oyunlar
+    for o in OZEL:
+        o['cikti'].mkdir(exist_ok=True)
+        (o['cikti'] / 'index.html').write_text(kilitli_sayfa(o, anahtar, tuz, o['geri']), encoding='utf-8')
+        (o['cikti'] / 'sw.js').write_text(SW_TEMIZLE, encoding='utf-8')
+        (o['cikti'] / '.nojekyll').write_text('', encoding='utf-8')
+
     # tahtaya indirilecek paket (internetsiz)
     menu = (SAYFA_SABLON
             .replace('__KARTLAR__', kartlar(lambda o: o['id'] + '.html'))
@@ -116,7 +141,7 @@ def main() -> int:
             z.writestr('Kimya-Oyunlari/' + o['id'] + '.html', kilitli_sayfa(o, anahtar, tuz, 'Kimya-Oyunlari.html'))
         z.writestr('Kimya-Oyunlari/OKU-BENI.txt', (KOK / 'arac' / 'okubeni.txt').read_text(encoding='utf-8'))
     zp.write_bytes(bellek.getvalue())
-    print(f'{len(OYUNLAR)} oyun kilitlendi; paket: {zp.relative_to(KOK)} ({zp.stat().st_size // 1024} KB)')
+    print(f'{len(OYUNLAR)} + {len(OZEL)} oyun kilitlendi; paket: {zp.relative_to(KOK)} ({zp.stat().st_size // 1024} KB)')
     return 0
 
 
