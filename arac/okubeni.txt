@@ -1,0 +1,20 @@
+KİMYA OYUNLARI - İNTERNETSİZ SÜRÜM
+===================================
+
+1. Bu klasörü (Kimya-Oyunlari) tahtada ya da bilgisayarda kalıcı bir yere
+   kopyalayın (örneğin Belgeler).
+2. Kimya-Oyunlari.html dosyasına çift dokunun. Oyun listesi tarayıcıda açılır
+   (Chrome, Edge ya da Firefox).
+3. Bir oyun seçin ve öğretmen şifresini girin. "Bu tahtada hatırla" işaretli
+   kalırsa o tahtada bütün oyunlar bundan sonra doğrudan açılır.
+
+İlerleme
+- Tamamlanan duraklar ve sınıf oyları tahtanın tarayıcısında saklanır.
+- Dosyaları başka bir klasöre taşımayın; aynı yerde kalsınlar.
+- Tarayıcı belleği silinirse ilerleme kaybolur. Her oyunun Öğretmen
+  sayfasındaki "Yedeği indir" düğmesiyle yedek alıp "Yedekten yükle" ile geri
+  yükleyebilirsiniz.
+
+Kilit
+- Tahtanın şifreyi unutmasını isterseniz bir oyunun Öğretmen sayfasındaki
+  "Bu tahtada kilitle" düğmesine basın.

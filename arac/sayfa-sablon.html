@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Kimya Oyunları</title>
+<style>
+  :root { --zemin: #f5f0e8; --yuzey: #ffffff; --yazi: #1c2433; --soluk: #5b6474; --renk: #1d4ed8; --cizgi: #d9d2c5; --vurgu: #fef3c7; }
+  @media (prefers-color-scheme: dark) { :root { --zemin: #0f1420; --yuzey: #182031; --yazi: #e8edf6; --soluk: #a3adbf; --renk: #60a5fa; --cizgi: #2c3850; --vurgu: #2a2410; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--zemin); color: var(--yazi); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.5; }
+  .sayfa { max-width: 70rem; margin: 0 auto; padding: 1.5rem 16px 3rem; }
+  h1 { font-size: 2.4rem; margin: .4rem 0 .2rem; }
+  .alt { color: var(--soluk); font-size: 1.1rem; margin: 0 0 1.2rem; }
+  h2 { font-size: 1.5rem; margin: 1.8rem 0 .7rem; }
+  .izgara { display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: 1rem; }
+  .kart { display: flex; flex-direction: column; gap: .3rem; background: var(--yuzey); border: 1px solid var(--cizgi); border-radius: 16px; padding: 1.1rem 1.2rem; color: inherit; text-decoration: none; box-shadow: 0 4px 14px rgba(0,0,0,.05); }
+  .kart:hover, .kart:focus { border-color: var(--renk); outline: none; }
+  .kart b { font-size: 1.35rem; }
+  .kart span { color: var(--soluk); }
+  .kart small { color: var(--soluk); font-size: .85rem; }
+  .kart em { font-style: normal; font-weight: 700; color: var(--renk); margin-top: auto; padding-top: .4rem; }
+  .kutu { background: var(--yuzey); border: 1px solid var(--cizgi); border-radius: 16px; padding: 1rem 1.2rem; margin: 1rem 0; }
+  .kutu.vurgu { background: var(--vurgu); }
+  .dugme { display: inline-block; font-size: 1.1rem; font-weight: 700; padding: .6rem 1.1rem; border-radius: 12px; border: 0; background: var(--renk); color: #fff; text-decoration: none; cursor: pointer; font-family: inherit; }
+  .dugme.ikinci { background: transparent; color: var(--renk); border: 2px solid var(--renk); }
+  ol { padding-left: 1.3rem; margin: .4rem 0; }
+  footer { color: var(--soluk); font-size: .9rem; margin-top: 2.5rem; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="sayfa">
+  <h1>⚗️ Kimya Oyunları</h1>
+  <p class="alt">Akıllı tahtada bütün sınıfla oynanan kimya oyunları · Türkiye Yüzyılı Maarif Modeli (2024)</p>
+
+  <div class="kutu vurgu">
+    <b>🔒 Oyunlar öğretmen şifresiyle açılır.</b> Tahtada bir oyunu açarken şifreyi bir kez girin ve “Bu tahtada hatırla”yı işaretli bırakın: O tahtada bütün oyunlar bundan sonra doğrudan açılır. Öğrencilerin telefonlarında şifre sorulur.
+    <div id="kilitAlan" hidden style="margin-top:.7rem">
+      Bu tahta şifreyi hatırlıyor. <button class="dugme ikinci" id="kilitle" type="button">🔒 Bu tahtada kilitle</button>
+    </div>
+  </div>
+
+__KARTLAR__
+
+  <div id="indirAlan" class="kutu" hidden>
+    <h2 style="margin-top:.2rem">⬇ Tahtaya indir (internetsiz)</h2>
+    <p>Bütün oyunlar tek bir pakette. İnternet olmadan da çalışır; ilerleme o tahtanın tarayıcısında saklanır.</p>
+    <p><a class="dugme" href="indir/kimya-oyunlari.zip" download>⬇ Paketi indir (ZIP)</a></p>
+    <ol>
+      <li>Paketi tahtaya (ya da USB belleğe) indirin.</li>
+      <li>ZIP dosyasını açın (“Tümünü ayıkla”). İçinden <b>Kimya-Oyunlari</b> klasörü çıkar.</li>
+      <li>Klasördeki <b>Kimya-Oyunlari.html</b> dosyasına çift dokunun. Oyun listesi tarayıcıda (Chrome, Edge ya da Firefox) açılır.</li>
+      <li>Klasörü hep aynı yerde tutun; ilerleme o tahtanın tarayıcısında kalır.</li>
+    </ol>
+  </div>
+  <div id="cevrimdisiNot" class="kutu" hidden>
+    Bu, tahtaya indirilmiş <b>internetsiz</b> sürümdür. Oyun dosyaları bu sayfayla aynı klasörde durmalıdır.
+  </div>
+
+  <div class="kutu">
+    <b>💾 İlerleme nerede saklanır?</b> Tamamlanan duraklar ve sınıf oyları tahtanın tarayıcısında saklanır. Tahtanın tarayıcı belleği silinirse kaybolur. Her oyunun <b>Öğretmen</b> sayfasındaki “💾 Yedeği indir” düğmesiyle bir yedek dosyası alıp “📂 Yedekten yükle” ile geri yükleyebilirsiniz.
+  </div>
+
+  <footer>Oyunların fikri, konusu ve pedagojik yönü bir BİLSEM kimya öğretmenine aittir. Kodu, benzetimleri ve metinleri öğretmenin isteği üzerine Claude (Anthropic) yapay zekâ modeli tarafından yazılmıştır.</footer>
+</div>
+<script>
+(function () {
+  var CEVRIMICI = __CEVRIMICI__;
+  document.getElementById(CEVRIMICI ? 'indirAlan' : 'cevrimdisiNot').hidden = false;
+  var hatirliyor = false;
+  try { hatirliyor = !!localStorage.getItem('gg-kilit-v1'); } catch (e) { /* bellek kapalı */ }
+  if (hatirliyor) document.getElementById('kilitAlan').hidden = false;
+  document.getElementById('kilitle').addEventListener('click', function () {
+    try { localStorage.removeItem('gg-kilit-v1'); } catch (e) { /* bellek kapalı */ }
+    document.getElementById('kilitAlan').hidden = true;
+  });
+})();
+</script>
+</body>
+</html>

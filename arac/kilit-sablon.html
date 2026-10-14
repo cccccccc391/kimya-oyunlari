@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>__BASLIK__ · Kilitli</title>
+<style>
+  :root { --zemin: #f5f0e8; --yuzey: #ffffff; --yazi: #1c2433; --soluk: #5b6474; --renk: #1d4ed8; --hata: #b91c1c; --cizgi: #d9d2c5; }
+  @media (prefers-color-scheme: dark) { :root { --zemin: #0f1420; --yuzey: #182031; --yazi: #e8edf6; --soluk: #a3adbf; --renk: #60a5fa; --hata: #fca5a5; --cizgi: #2c3850; } }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body { background: var(--zemin); color: var(--yazi); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 16px; }
+  .kart { background: var(--yuzey); border: 1px solid var(--cizgi); border-radius: 18px; padding: 2rem 2rem 1.5rem; width: 100%; max-width: 30rem; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+  .kilit { font-size: 3rem; line-height: 1; }
+  h1 { font-size: 1.9rem; margin: .6rem 0 .2rem; }
+  .alt { color: var(--soluk); margin: 0 0 1.4rem; font-size: 1.05rem; }
+  label { display: block; font-weight: 700; margin-bottom: .4rem; font-size: 1.05rem; }
+  input[type=password] { width: 100%; font-size: 1.5rem; padding: .6rem .8rem; border-radius: 12px; border: 2px solid var(--cizgi); background: var(--zemin); color: var(--yazi); font-family: inherit; }
+  input[type=password]:focus { outline: 3px solid var(--renk); outline-offset: 1px; }
+  .hatirla { display: flex; align-items: center; gap: .5rem; font-weight: 400; margin: .9rem 0 1.1rem; font-size: 1rem; }
+  .hatirla input { width: 1.4rem; height: 1.4rem; }
+  button { width: 100%; font-size: 1.3rem; font-weight: 700; padding: .75rem; border-radius: 12px; border: 0; background: var(--renk); color: #fff; cursor: pointer; font-family: inherit; }
+  button:disabled { opacity: .6; cursor: wait; }
+  .mesaj { min-height: 1.6rem; margin-top: .8rem; font-weight: 700; color: var(--hata); }
+  .not { color: var(--soluk); font-size: .92rem; margin-top: .6rem; }
+  a { color: var(--renk); }
+</style>
+</head>
+<body>
+<main class="kart">
+  <div class="kilit" aria-hidden="true">🔒</div>
+  <h1>__BASLIK__</h1>
+  <p class="alt">__ALT__</p>
+  <form id="form" autocomplete="off">
+    <label for="sifre">Öğretmen şifresi</label>
+    <input id="sifre" type="password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" required>
+    <label class="hatirla"><input id="hatirla" type="checkbox" checked> Bu tahtada hatırla</label>
+    <button id="ac" type="submit">Oyunu aç</button>
+    <div class="mesaj" id="mesaj" role="alert"></div>
+  </form>
+  <p class="not">Bu oyun derste öğretmenle birlikte oynanır. Şifreyi öğretmeniniz bilir. <a href="__GERI__">Bütün oyunlar</a></p>
+</main>
+<script>
+(function () {
+  'use strict';
+  var V = __VERI__;
+  var ANAHTAR = 'gg-kilit-v1';
+  var form = document.getElementById('form'), girdi = document.getElementById('sifre'), mesaj = document.getElementById('mesaj'), dugme = document.getElementById('ac');
+  function cevir(s) { var b = atob(s), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+  function yaz64(tampon) { var u = new Uint8Array(tampon), s = ''; for (var i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); }
+  function coz(anahtar) {
+    return crypto.subtle.decrypt({ name: 'AES-GCM', iv: cevir(V.iv) }, anahtar, cevir(V.veri)).then(function (d) { return new TextDecoder().decode(d); });
+  }
+  // sayfa tamamen yüklenmeden document.open çağrılırsa eski içerik kalabilir; yüklenmeyi bekle
+  function goster(sayfa) {
+    function yaz() { setTimeout(function () { document.open(); document.write(sayfa); document.close(); }, 0); }
+    if (document.readyState === 'complete') yaz(); else window.addEventListener('load', yaz);
+  }
+  if (!window.crypto || !crypto.subtle || !window.TextDecoder) {
+    mesaj.textContent = 'Bu tarayıcı kilidi açamıyor. Chrome, Edge ya da Firefox’un güncel bir sürümünü kullanın.';
+    dugme.disabled = true; return;
+  }
+  // tahta şifreyi hatırlıyorsa doğrudan aç
+  var kayit = null;
+  try { kayit = JSON.parse(localStorage.getItem(ANAHTAR) || 'null'); } catch (e) { kayit = null; }
+  if (kayit && kayit.s === V.tuz && kayit.k) {
+    dugme.disabled = true; mesaj.textContent = '';
+    crypto.subtle.importKey('raw', cevir(kayit.k), { name: 'AES-GCM' }, false, ['decrypt'])
+      .then(coz).then(goster)
+      .catch(function () { try { localStorage.removeItem(ANAHTAR); } catch (e) { /* bellek kapalı */ } dugme.disabled = false; girdi.focus(); });
+  } else girdi.focus();
+  form.addEventListener('submit', function (olay) {
+    olay.preventDefault();
+    var sifre = girdi.value.trim().toLowerCase();
+    if (!sifre) return;
+    dugme.disabled = true; mesaj.textContent = '';
+    var hatirla = document.getElementById('hatirla').checked, anahtar;
+    crypto.subtle.importKey('raw', new TextEncoder().encode(sifre), 'PBKDF2', false, ['deriveKey'])
+      .then(function (temel) { return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: cevir(V.tuz), iterations: V.tur, hash: 'SHA-256' }, temel, { name: 'AES-GCM', length: 256 }, true, ['decrypt']); })
+      .then(function (k) { anahtar = k; return coz(k); })
+      .then(function (sayfa) {
+        if (!hatirla) { goster(sayfa); return; }
+        return crypto.subtle.exportKey('raw', anahtar).then(function (ham) {
+          try { localStorage.setItem(ANAHTAR, JSON.stringify({ s: V.tuz, k: yaz64(ham) })); } catch (e) { /* bellek kapalı */ }
+          goster(sayfa);
+        });
+      })
+      .catch(function () { dugme.disabled = false; mesaj.textContent = 'Şifre yanlış. Bir daha deneyin.'; girdi.select(); });
+  });
+})();
+</script>
+</body>
+</html>
