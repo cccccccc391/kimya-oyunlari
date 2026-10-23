@@ -35,12 +35,12 @@
   <h1>⚗️ Kimya Oyunları</h1>
   <p class="alt">Akıllı tahtada bütün sınıfla oynanan kimya oyunları · Türkiye Yüzyılı Maarif Modeli (2024)</p>
 
-  <div class="kutu vurgu">
+  <!--KILIT--><div class="kutu vurgu">
     <b>🔒 Oyunlar öğretmen şifresiyle açılır.</b> Tahtada bir oyunu açarken şifreyi bir kez girin ve “Bu tahtada hatırla”yı işaretli bırakın: O tahtada bütün oyunlar bundan sonra doğrudan açılır. Öğrencilerin telefonlarında şifre sorulur.
     <div id="kilitAlan" hidden style="margin-top:.7rem">
       Bu tahta şifreyi hatırlıyor. <button class="dugme ikinci" id="kilitle" type="button">🔒 Bu tahtada kilitle</button>
     </div>
-  </div>
+  </div><!--/KILIT-->
 
 __KARTLAR__
 
@@ -69,12 +69,18 @@ __KARTLAR__
 (function () {
   var CEVRIMICI = __CEVRIMICI__;
   document.getElementById(CEVRIMICI ? 'indirAlan' : 'cevrimdisiNot').hidden = false;
+  var kilitAlan = document.getElementById('kilitAlan');
+  if (!kilitAlan) {
+    // şifresiz sürüm: tahtanın hatırladığı eski kilit anahtarı gereksiz
+    try { localStorage.removeItem('gg-kilit-v1'); } catch (e) { /* bellek kapalı */ }
+    return;
+  }
   var hatirliyor = false;
   try { hatirliyor = !!localStorage.getItem('gg-kilit-v1'); } catch (e) { /* bellek kapalı */ }
-  if (hatirliyor) document.getElementById('kilitAlan').hidden = false;
+  if (hatirliyor) kilitAlan.hidden = false;
   document.getElementById('kilitle').addEventListener('click', function () {
     try { localStorage.removeItem('gg-kilit-v1'); } catch (e) { /* bellek kapalı */ }
-    document.getElementById('kilitAlan').hidden = true;
+    kilitAlan.hidden = true;
   });
 })();
 </script>

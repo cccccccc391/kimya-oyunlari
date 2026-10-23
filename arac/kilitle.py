@@ -1,9 +1,12 @@
-"""Kimya Oyunları: oyunların tek dosyalık sürümlerini öğretmen şifresiyle
-şifreler, toplu sayfayı ve tahtaya indirilecek ZIP paketini üretir.
+"""Kimya Oyunları: oyunların tek dosyalık sürümlerinden toplu sayfayı, her oyunun
+sayfasını ve tahtaya indirilecek ZIP paketini üretir. Kilit açıksa oyunlar
+öğretmen şifresiyle şifrelenir.
+
+Kilit: arac/yayin.json dosyasındaki "kilit" değeri (true: şifreli, false: şifresiz).
 
 Kullanım (bu klasörden):  python arac/kilitle.py
 Gerekenler:
-  - .kilit dosyası (ilk satır: şifre; git'e eklenmez)
+  - kilit açıksa .kilit dosyası (ilk satır: şifre; git'e eklenmez)
   - her oyunun ../<oyun>/dagitim/<oyun>.html dosyası (oyun klasöründe
     python arac/tek-dosya.py ile üretilir)
 Çıktı: index.html, <oyun>/index.html, indir/kimya-oyunlari.zip
@@ -19,6 +22,7 @@ import io
 import json
 import os
 import pathlib
+import re
 import sys
 import zipfile
 
@@ -78,10 +82,33 @@ def tuz_oku() -> bytes:
 
 
 KILIT_SABLON = (KOK / 'arac' / 'kilit-sablon.html').read_text(encoding='utf-8')
+KILITLI = json.loads((KOK / 'arac' / 'yayin.json').read_text(encoding='utf-8')).get('kilit', True)
+# Şifresiz sürüm, tahtanın daha önce hatırladığı kilit anahtarını siler (Öğretmen sayfasındaki
+# "Bu tahtada kilitle" düğmesi görünmesin)
+KILIT_TEMIZLE = "<script>try { localStorage.removeItem('gg-kilit-v1'); } catch (e) { /* bellek kapalı */ }</script>"
+
+
+def isaretli_bolum(metin: str) -> str:
+    """<!--KILIT-->…<!--/KILIT--> ve [[KILIT]]…[[/KILIT]] arasındaki bölümler yalnızca kilitli sürümde kalır."""
+    for bas, son in (('<!--KILIT-->', '<!--/KILIT-->'), ('[[KILIT]]', '[[/KILIT]]')):
+        if KILITLI:
+            metin = metin.replace(bas, '').replace(son, '')
+        else:
+            metin = re.sub(re.escape(bas) + r'.*?' + re.escape(son) + r'\n?', '', metin, flags=re.S)
+    return metin
+
+
+def acik_sayfa(o: dict) -> str:
+    sayfa = (DEV / o['id'] / 'dagitim' / (o['id'] + '.html')).read_text(encoding='utf-8')
+    if sayfa.count('<head>') < 1:
+        raise SystemExit(f"{o['id']}: <head> bulunamadı")
+    return sayfa.replace('<head>', '<head>\n' + KILIT_TEMIZLE, 1)
 SAYFA_SABLON = (KOK / 'arac' / 'sayfa-sablon.html').read_text(encoding='utf-8')
 
 
 def kilitli_sayfa(o: dict, anahtar: bytes, tuz: bytes, geri: str) -> str:
+    if not KILITLI:
+        return acik_sayfa(o)
     kaynak = DEV / o['id'] / 'dagitim' / (o['id'] + '.html')
     duz = kaynak.read_bytes()
     iv = os.urandom(12)
@@ -101,22 +128,24 @@ def kartlar(baglanti) -> str:
         for o in OYUNLAR:
             if o['sinif'] != sinif:
                 continue
-            parca.append('<a class="kart" href="' + baglanti(o) + '"><b>' + html.escape(o['ad']) + '</b><span>' + html.escape(o['alt']) + '</span><small>' + o['kazanim'] + '</small><em>🔒 Aç ▶</em></a>')
+            parca.append('<a class="kart" href="' + baglanti(o) + '"><b>' + html.escape(o['ad']) + '</b><span>' + html.escape(o['alt']) + '</span><small>' + o['kazanim'] + '</small><em>' + ('🔒 Aç ▶' if KILITLI else 'Aç ▶') + '</em></a>')
         parca.append('</div>')
     return '\n'.join(parca)
 
 
 def main() -> int:
-    sifre = sifre_oku()
-    tuz = tuz_oku()
-    anahtar = hashlib.pbkdf2_hmac('sha256', sifre.encode('utf-8'), tuz, TUR, 32)
+    if KILITLI:
+        tuz = tuz_oku()
+        anahtar = hashlib.pbkdf2_hmac('sha256', sifre_oku().encode('utf-8'), tuz, TUR, 32)
+    else:
+        tuz = anahtar = None
 
     # çevrim içi site
     for o in OYUNLAR:
         d = KOK / o['id']
         d.mkdir(exist_ok=True)
         (d / 'index.html').write_text(kilitli_sayfa(o, anahtar, tuz, '../'), encoding='utf-8')
-    site = (SAYFA_SABLON
+    site = (isaretli_bolum(SAYFA_SABLON)
             .replace('__KARTLAR__', kartlar(lambda o: o['id'] + '/'))
             .replace('__CEVRIMICI__', '1'))
     (KOK / 'index.html').write_text(site, encoding='utf-8')
@@ -129,7 +158,7 @@ def main() -> int:
         (o['cikti'] / '.nojekyll').write_text('', encoding='utf-8')
 
     # tahtaya indirilecek paket (internetsiz)
-    menu = (SAYFA_SABLON
+    menu = (isaretli_bolum(SAYFA_SABLON)
             .replace('__KARTLAR__', kartlar(lambda o: o['id'] + '.html'))
             .replace('__CEVRIMICI__', '0'))
     (KOK / 'indir').mkdir(exist_ok=True)
@@ -139,9 +168,9 @@ def main() -> int:
         z.writestr('Kimya-Oyunlari/Kimya-Oyunlari.html', menu)
         for o in OYUNLAR:
             z.writestr('Kimya-Oyunlari/' + o['id'] + '.html', kilitli_sayfa(o, anahtar, tuz, 'Kimya-Oyunlari.html'))
-        z.writestr('Kimya-Oyunlari/OKU-BENI.txt', (KOK / 'arac' / 'okubeni.txt').read_text(encoding='utf-8'))
+        z.writestr('Kimya-Oyunlari/OKU-BENI.txt', isaretli_bolum((KOK / 'arac' / 'okubeni.txt').read_text(encoding='utf-8')))
     zp.write_bytes(bellek.getvalue())
-    print(f'{len(OYUNLAR)} + {len(OZEL)} oyun kilitlendi; paket: {zp.relative_to(KOK)} ({zp.stat().st_size // 1024} KB)')
+    print(f'{len(OYUNLAR)} + {len(OZEL)} oyun {"kilitli" if KILITLI else "ŞİFRESİZ"} üretildi; paket: {zp.relative_to(KOK)} ({zp.stat().st_size // 1024} KB)')
     return 0
 
 

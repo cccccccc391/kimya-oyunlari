@@ -35,22 +35,16 @@
   <h1>⚗️ Kimya Oyunları</h1>
   <p class="alt">Akıllı tahtada bütün sınıfla oynanan kimya oyunları · Türkiye Yüzyılı Maarif Modeli (2024)</p>
 
-  <div class="kutu vurgu">
-    <b>🔒 Oyunlar öğretmen şifresiyle açılır.</b> Tahtada bir oyunu açarken şifreyi bir kez girin ve “Bu tahtada hatırla”yı işaretli bırakın: O tahtada bütün oyunlar bundan sonra doğrudan açılır. Öğrencilerin telefonlarında şifre sorulur.
-    <div id="kilitAlan" hidden style="margin-top:.7rem">
-      Bu tahta şifreyi hatırlıyor. <button class="dugme ikinci" id="kilitle" type="button">🔒 Bu tahtada kilitle</button>
-    </div>
-  </div>
-
+  
 <h2>9. sınıf</h2><div class="izgara">
-<a class="kart" href="gorunmeyeni-gormek/"><b>Görünmeyeni Görmek</b><span>Atomun 2500 yıllık keşif yolculuğu: Thales’ten orbitallere</span><small>KİM.9.1.3–9.1.8</small><em>🔒 Aç ▶</em></a>
-<a class="kart" href="kimya-hayattir/"><b>Kimya Hayattır</b><span>Ürün laboratuvarı ve kaza dosyaları</span><small>KİM.9.1.1–9.1.2</small><em>🔒 Aç ▶</em></a>
-<a class="kart" href="cesitliligin-sirri/"><b>Çeşitliliğin Sırrı</b><span>Bağlardan sıvılara: Maddeler neden bu kadar farklı?</span><small>KİM.9.2.1–9.2.13</small><em>🔒 Aç ▶</em></a>
-<a class="kart" href="atiktan-nanoya/"><b>Atıktan Nanoya</b><span>Metallerin ve nanoparçacıkların sürdürülebilir kimyası</span><small>KİM.9.3.1–9.3.2</small><em>🔒 Aç ▶</em></a>
+<a class="kart" href="gorunmeyeni-gormek/"><b>Görünmeyeni Görmek</b><span>Atomun 2500 yıllık keşif yolculuğu: Thales’ten orbitallere</span><small>KİM.9.1.3–9.1.8</small><em>Aç ▶</em></a>
+<a class="kart" href="kimya-hayattir/"><b>Kimya Hayattır</b><span>Ürün laboratuvarı ve kaza dosyaları</span><small>KİM.9.1.1–9.1.2</small><em>Aç ▶</em></a>
+<a class="kart" href="cesitliligin-sirri/"><b>Çeşitliliğin Sırrı</b><span>Bağlardan sıvılara: Maddeler neden bu kadar farklı?</span><small>KİM.9.2.1–9.2.13</small><em>Aç ▶</em></a>
+<a class="kart" href="atiktan-nanoya/"><b>Atıktan Nanoya</b><span>Metallerin ve nanoparçacıkların sürdürülebilir kimyası</span><small>KİM.9.3.1–9.3.2</small><em>Aç ▶</em></a>
 </div>
 <h2>10. sınıf</h2><div class="izgara">
-<a class="kart" href="tepkimenin-izinde/"><b>Tepkimenin İzinde</b><span>Kanıtlar, tepkime modeli, çökelme, redoks ve asit-baz</span><small>KİM.10.1.1–10.1.3</small><em>🔒 Aç ▶</em></a>
-<a class="kart" href="mol-atolyesi/"><b>Mol Atölyesi</b><span>Mol kavramı, denkleştirme ve stokiyometri</span><small>KİM.10.1.4–10.1.7</small><em>🔒 Aç ▶</em></a>
+<a class="kart" href="tepkimenin-izinde/"><b>Tepkimenin İzinde</b><span>Kanıtlar, tepkime modeli, çökelme, redoks ve asit-baz</span><small>KİM.10.1.1–10.1.3</small><em>Aç ▶</em></a>
+<a class="kart" href="mol-atolyesi/"><b>Mol Atölyesi</b><span>Mol kavramı, denkleştirme ve stokiyometri</span><small>KİM.10.1.4–10.1.7</small><em>Aç ▶</em></a>
 </div>
 
   <div id="indirAlan" class="kutu" hidden>
@@ -78,12 +72,18 @@
 (function () {
   var CEVRIMICI = 1;
   document.getElementById(CEVRIMICI ? 'indirAlan' : 'cevrimdisiNot').hidden = false;
+  var kilitAlan = document.getElementById('kilitAlan');
+  if (!kilitAlan) {
+    // şifresiz sürüm: tahtanın hatırladığı eski kilit anahtarı gereksiz
+    try { localStorage.removeItem('gg-kilit-v1'); } catch (e) { /* bellek kapalı */ }
+    return;
+  }
   var hatirliyor = false;
   try { hatirliyor = !!localStorage.getItem('gg-kilit-v1'); } catch (e) { /* bellek kapalı */ }
-  if (hatirliyor) document.getElementById('kilitAlan').hidden = false;
+  if (hatirliyor) kilitAlan.hidden = false;
   document.getElementById('kilitle').addEventListener('click', function () {
     try { localStorage.removeItem('gg-kilit-v1'); } catch (e) { /* bellek kapalı */ }
-    document.getElementById('kilitAlan').hidden = true;
+    kilitAlan.hidden = true;
   });
 })();
 </script>

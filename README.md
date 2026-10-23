@@ -1,6 +1,6 @@
 # Kimya Oyunları
 
-Akıllı tahtada bütün sınıfla oynanan kimya oyunlarının **kilitli** toplu sayfası (Türkiye Yüzyılı Maarif Modeli, 2024).
+Akıllı tahtada bütün sınıfla oynanan kimya oyunlarının toplu sayfası (Türkiye Yüzyılı Maarif Modeli, 2024). Oyunlar şu an **şifresiz** yayındadır.
 
 | Sınıf | Oyun | Öğrenme çıktıları |
 |---|---|---|
@@ -11,7 +11,9 @@ Akıllı tahtada bütün sınıfla oynanan kimya oyunlarının **kilitli** toplu
 | 10 | Tepkimenin İzinde | KİM.10.1.1–10.1.3 |
 | 10 | Mol Atölyesi | KİM.10.1.4–10.1.7 |
 
-## Kilit nasıl çalışır?
+## Kilit (şu an kapalı)
+
+Kilit `arac/yayin.json` dosyasındaki `"kilit"` değeriyle açılıp kapatılır (24 Ekim 2026'dan beri `false`: oyunlar şifresiz). Şifresiz sürüm, tahtaların daha önce hatırladığı kilit anahtarını kendiliğinden siler. Kilit açıkken:
 
 - Her oyun sayfası, öğretmen şifresiyle **şifrelenmiş** olarak yayınlanır. Şifre girilmeden oyunun içeriği tarayıcıya hiç gelmez; sayfanın kaynağına bakmak da işe yaramaz.
 - Şifre doğruysa oyunu tarayıcının kendisi çözer ve açar. Arada bir sunucu yoktur.
@@ -21,7 +23,7 @@ Akıllı tahtada bütün sınıfla oynanan kimya oyunlarının **kilitli** toplu
 
 ## Tahtaya indirmek
 
-Ana sayfadaki **⬇ Paketi indir (ZIP)** bütün oyunların internetsiz sürümünü içerir. ZIP açılınca çıkan `Kimya-Oyunlari` klasöründeki `Kimya-Oyunlari.html` dosyası oyun listesini açar. İnternetsiz sürüm de aynı şifreyle açılır.
+Ana sayfadaki **⬇ Paketi indir (ZIP)** bütün oyunların internetsiz sürümünü içerir. ZIP açılınca çıkan `Kimya-Oyunlari` klasöründeki `Kimya-Oyunlari.html` dosyası oyun listesini açar. Kilit açıksa internetsiz sürüm de aynı şifreyle açılır.
 
 ## İlerleme ve yedek
 
@@ -30,10 +32,10 @@ Ana sayfadaki **⬇ Paketi indir (ZIP)** bütün oyunların internetsiz sürüm�
 ## Yeniden üretmek (teknik)
 
 1. Her oyunun kendi klasöründe tek dosyalık sürümü üretin: `python arac/tek-dosya.py`
-2. Bu klasörde `.kilit` dosyasının ilk satırına şifreyi yazın (bu dosya git'e eklenmez).
+2. Kilit açık olacaksa (`arac/yayin.json` içinde `"kilit": true`) bu klasörde `.kilit` dosyasının ilk satırına şifreyi yazın (bu dosya git'e eklenmez).
 3. `python arac/kilitle.py` çalıştırın. `index.html`, her oyunun `index.html` dosyası ve `indir/kimya-oyunlari.zip` yeniden üretilir.
 
-Şifreleme: PBKDF2-SHA256 (250 000 tur) ile türetilen anahtar ve AES-256-GCM (tarayıcıda Web Crypto). Python için `cryptography` paketi gerekir.
+Kilit açıkken şifreleme: PBKDF2-SHA256 (250 000 tur) ile türetilen anahtar ve AES-256-GCM (tarayıcıda Web Crypto). Python için `cryptography` paketi gerekir.
 
 ## Hazırlanışı
 
